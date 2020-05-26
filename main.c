@@ -14,7 +14,7 @@
 #define Y_POS_FOR_TERMINAL (MAIN_WINDOW_HEIGHT/2 - 2)
 #define TIME_OF_SLEEP 100 
 
-typedef struct // структура для работы с потоком
+typedef struct 
 {
 	char id;
 	int time;
@@ -23,51 +23,51 @@ typedef struct // структура для работы с потоком
 	int in_building;
 } ThreadArgs;
 
-typedef struct { // структура для работы с окном
+typedef struct { 
 	int id;
 	int time;
 	char visiter;
 } WindowInfo;
 
-typedef struct { // структура для работы с терминалом
+typedef struct { 
 	int last_ticket_id;
 	char visiter;
 } TicketInfo;
 
-void cls_scr(); // Очистка экрана
-void write_many(char, int, int, int); // функция для записи одного символа несколько раз в определенной точке
-void make_window(int, int, int, int); // функция для создания окна
-void refresh_window_info(int); // функция для обновления данных модели согласно данным структуры окна
-void write(char *, int, int); // функция для записи строки в определенной точке
-void setCursor(int, int); // функция для перемещения курсора
-void start_model(); // функция для создания модели
-void show_model(); // функция для отображения модели
-void change_window_info(int, int, int, char); // функция для изменения значений в окне
-int change_ticket_info(char); // функция для получения талона и изменения значений в терминале
-void refresh_ticket_window_info(); // функция для обновления данных модели согласно данным структуры терминала
-void refresh_model(); // функция для обновления данных модели согласно данным потоков(расположение букв)
-void get_to(ThreadArgs *, int, int); // функция передвижения посетителя в определенную точку
-void change_position(ThreadArgs *, int, int); // функция для изменения положения посетителя на 1 единицу
-int check(int, int); // функция проверки возможности хода
-DWORD WINAPI ThreadVisiter(LPVOID); // основная функция создаваемого потока,представляющая из себя посетителя
+void cls_scr(); 
+void write_many(char, int, int, int); 
+void make_window(int, int, int, int); 
+void refresh_window_info(int); 
+void write(char *, int, int); 
+void setCursor(int, int); 
+void start_model(); 
+void show_model(); 
+void change_window_info(int, int, int, char); 
+int change_ticket_info(char); 
+void refresh_ticket_window_info(); 
+void refresh_model(); 
+void get_to(ThreadArgs *, int, int); 
+void change_position(ThreadArgs *, int, int); 
+int check(int, int); 
+DWORD WINAPI ThreadVisiter(LPVOID); 
 
-WindowInfo WindInfo[WINDOWS_NUMBER]; // массив структур окон
-TicketInfo TickInfo; // структура терминала
+WindowInfo WindInfo[WINDOWS_NUMBER]; 
+TicketInfo TickInfo;
 
-ThreadArgs * Params[NUMBER_OF_VISITERS]; // массив структур аргументов потоков
-HANDLE ThreadVisiters[NUMBER_OF_VISITERS]; // массив дескрипторов потоков
-HANDLE WriteMutex; // дескриптор мьютекса,отвечающего за вывод на экран
-HANDLE TerminalMutex; // дескриптор мьютекса,отвечающего за контроль терминала
-HANDLE WindowMutexes[WINDOWS_NUMBER]; // Контроль доступа к окнам
+ThreadArgs * Params[NUMBER_OF_VISITERS]; 
+HANDLE ThreadVisiters[NUMBER_OF_VISITERS]; 
+HANDLE WriteMutex; 
+HANDLE TerminalMutex; 
+HANDLE WindowMutexes[WINDOWS_NUMBER]; 
 
 int main() 
 {
-	for(int i = 0;i < NUMBER_OF_VISITERS;i++) // заполняем массив указателей на структуры для каждого посетителя
+	for(int i = 0;i < NUMBER_OF_VISITERS;i++) 
 	{
-		ThreadArgs * test = (ThreadArgs *)malloc(sizeof(ThreadArgs)); // выделяем память на heap для каждой структуры
-		test->id = i + 'A'; // id имеет представление [A-Z],поэтому просто будем прибавлять i к 'A'
-		test->time = (rand() % 270 + 30) * 350; // генерируем от 0,5 до 5 минут (переводим в миллисекунды)
-		test->x = MAIN_WINDOW_WIDTH/4 + i*2; // задаем координаты для "места" каждого посетителя
+		ThreadArgs * test = (ThreadArgs *)malloc(sizeof(ThreadArgs)); 
+		test->id = i + 'A'; 
+		test->time = (rand() % 270 + 30) * 350; 
+		test->x = MAIN_WINDOW_WIDTH/4 + i*2; 
 		test->y = MAIN_WINDOW_HEIGHT - 3;
 		test->in_building = 0;
 		Params[i] = test;
@@ -76,9 +76,9 @@ int main()
 	start_model();
 	show_model();
 
-	WriteMutex = CreateMutex(NULL, 0, NULL); // стандартное создание мьютекса
+	WriteMutex = CreateMutex(NULL, 0, NULL); 
 
-	if(WriteMutex == NULL) // стандартная проверка на успех создания мьютекса
+	if(WriteMutex == NULL) 
 	{
 		printf("Failed to make a Write mutex");
 		return 1;
@@ -103,7 +103,7 @@ int main()
 		}
 	}
 
-	for(int i = 0;i < NUMBER_OF_VISITERS;i++) // создаем все потоки
+	for(int i = 0;i < NUMBER_OF_VISITERS;i++) 
 	{
 		int * id = malloc(sizeof(int));
 		*id = i;
@@ -116,15 +116,15 @@ int main()
 		}
 	}
 
-	WaitForMultipleObjects(NUMBER_OF_VISITERS, ThreadVisiters, 1, INFINITE); // ждем окончания действия всех потоков
-	setCursor(0,0); // возвращаем курсор в позицию 0 0
+	WaitForMultipleObjects(NUMBER_OF_VISITERS, ThreadVisiters, 1, INFINITE); 
+	setCursor(0,0); 
 
-	for(int i = 0;i < NUMBER_OF_VISITERS;i++) // дальше просто закрываем все возможные дескрипторы
+	for(int i = 0;i < NUMBER_OF_VISITERS;i++) 
 	{
 		CloseHandle(ThreadVisiters[i]); 
 	}
 
-	for(int i = 0;i < NUMBER_OF_VISITERS;i++) // освобождаем выделенную память
+	for(int i = 0;i < NUMBER_OF_VISITERS;i++) 
 	{
 		free(Params[i]);
 	}
@@ -137,13 +137,13 @@ int main()
 	CloseHandle(WriteMutex);
 	CloseHandle(TerminalMutex);
 
-	getchar(); // ждем любого действия пользователя,дабы модель сразу не очищалась
-	cls_scr(); // очищаем экран
+	getchar(); 
+	cls_scr(); 
 
 	return 0;
 }
 
-int get_length(char * string) // получение длины строки(только для терминированной строки)
+int get_length(char * string) 
 {
 	int i = 0;
 	while(*(string + i) != '\0')
@@ -156,7 +156,7 @@ int get_length(char * string) // получение длины строки(то
 
 void setCursor(int x, int y)
 {
-	HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE); // здесь мы получаем дескриптор нашей консоли,чтобы наши действия относились к ней
+	HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE); 
 
 	COORD pos;
 	pos.X = x;
@@ -165,7 +165,7 @@ void setCursor(int x, int y)
 	SetConsoleCursorPosition(hout, pos);
 }
 
-void write(char * string, int x, int y) // только терминированные строки
+void write(char * string, int x, int y)
 {
 	int len = get_length(string);
 	DWORD written;
@@ -202,7 +202,7 @@ void make_window(int x, int y, int width, int height)
 
 void start_model()
 {
-	CONSOLE_CURSOR_INFO * info = malloc(sizeof(CONSOLE_CURSOR_INFO)); // создаем структуру info, чтобы наш курсор был невидимым
+	CONSOLE_CURSOR_INFO * info = malloc(sizeof(CONSOLE_CURSOR_INFO)); 
 	info->dwSize = 1;
 	info->bVisible = 0;
 	HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -210,12 +210,12 @@ void start_model()
 	SetConsoleCursorInfo(hout, info);
 	free(info);
 
-	for(int i = 0; i < WINDOWS_NUMBER; i++) // ставим стандартные значения для окон
+	for(int i = 0; i < WINDOWS_NUMBER; i++) 
 	{
 		change_window_info(i, 0, 0, 0);
 	}
 
-	TickInfo.last_ticket_id = 0; //ставим стандартные значения для терминала
+	TickInfo.last_ticket_id = 0; 
 	TickInfo.visiter = 0;
 
 }
@@ -257,7 +257,7 @@ void refresh_window_info(int window_id)
 
 void change_window_info(int window_id, int ticket_id, int time, char visiter)
 {
-	WindowInfo * info = &WindInfo[window_id]; // получаем нужное окно
+	WindowInfo * info = &WindInfo[window_id]; 
 	info->id = ticket_id;
 	info->time = time;
 	info->visiter = visiter;
@@ -273,15 +273,15 @@ int change_ticket_info(char visiter)
 void show_model()
 {
 	cls_scr();
-	make_window(2, 2, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT); //главное окно модели
+	make_window(2, 2, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT); 
 	
-	for(int i = 0; i < WINDOWS_NUMBER; i++) // 3 окна приема
+	for(int i = 0; i < WINDOWS_NUMBER; i++) 
 	{
 		make_window(2 + i*WINDOW_WIDTH, 2, WINDOW_WIDTH, WINDOW_HEIGHT);
 		refresh_window_info(i);
 	}
 
-	make_window(X_POS_FOR_TERMINAL, Y_POS_FOR_TERMINAL, 20, 5); // терминал
+	make_window(X_POS_FOR_TERMINAL, Y_POS_FOR_TERMINAL, 20, 5); 
 	refresh_ticket_window_info();
 	
 	setCursor(0, 0);
@@ -296,7 +296,7 @@ void refresh_model()
 
 	refresh_ticket_window_info();
 
-	for(int i = 0; i < NUMBER_OF_VISITERS; i++) // смотрим,есть ли посетитель в здании и если он есть - отрисовываем его
+	for(int i = 0; i < NUMBER_OF_VISITERS; i++) 
 	{
 		if(Params[i]->in_building)
 		{
@@ -372,67 +372,67 @@ void get_to(ThreadArgs * params, int x, int y)
 	}
 }
 
-DWORD WINAPI ThreadVisiter(LPVOID Thread_id) // здесь все также,как в прошлой версии.Саму логику действий потока я не менял,менялось лишь отображение.
+DWORD WINAPI ThreadVisiter(LPVOID Thread_id) 
 {
-	int * idptr = (int *) Thread_id; // явно задаем тип 
-	int id = *idptr; // удобнее работать с переменной,а не указателем,поэтому просто задаем id
-	srand(Params[id]->time); // каждому потоку задаем свое состояние генератора радомных чисел
+	int * idptr = (int *) Thread_id; 
+	int id = *idptr; 
+	srand(Params[id]->time); 
 
-	Sleep(Params[id]->time); // условно говоря,во время этого сна мы ждем пока посетитель дойдет до почты
-	WaitForSingleObject(WriteMutex, INFINITE); // получаем разрешение на то,чтобы менять что-то в модели
-	Params[id]->in_building = 1; // меняем флаг,ведь мы уже находимся в здании
-	refresh_model(); // обновляем модель(в этот момент нарисуется наша буква)
-	ReleaseMutex(WriteMutex); // освобождаем мьютекс для других потоков
+	Sleep(Params[id]->time); 
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	Params[id]->in_building = 1; 
+	refresh_model(); 
+	ReleaseMutex(WriteMutex); 
 
-	get_to(Params[id], X_POS_FOR_TERMINAL + 10, Y_POS_FOR_TERMINAL + 6); // Добираемся до терминала
+	get_to(Params[id], X_POS_FOR_TERMINAL + 10, Y_POS_FOR_TERMINAL + 6); 
 
-	WaitForSingleObject(TerminalMutex, INFINITE); // ждем разрешение на то,чтобы использовать терминал
-	int ticket_id = change_ticket_info(Params[id]->id); // получаем номер билетика
+	WaitForSingleObject(TerminalMutex, INFINITE); 
+	int ticket_id = change_ticket_info(Params[id]->id); 
 	
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	refresh_ticket_window_info(); // обновляем информацию в окне терминала
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	refresh_ticket_window_info(); 
+	ReleaseMutex(WriteMutex); 
 
-	Sleep(TERMINAL_WORKING_TIME); // условно получаем билет
-	ReleaseMutex(TerminalMutex); // освобождаем терминал для других посетителей
+	Sleep(TERMINAL_WORKING_TIME); 
+	ReleaseMutex(TerminalMutex); 
 
-	get_to(Params[id], MAIN_WINDOW_WIDTH/4 + id*2, MAIN_WINDOW_HEIGHT - 3); // доходим обратно до своего места в зале
+	get_to(Params[id], MAIN_WINDOW_WIDTH/4 + id*2, MAIN_WINDOW_HEIGHT - 3); 
 
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	Params[id]->in_building = 0; // убираем этот флаг,чтобы другие потоки могли проходить сквозь нас
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	Params[id]->in_building = 0; 
+	ReleaseMutex(WriteMutex); 
 
-	int index = WaitForMultipleObjects(WINDOWS_NUMBER, WindowMutexes, 0, INFINITE) - WAIT_OBJECT_0; // ждем,пока одно из окон освободится
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	Params[id]->in_building = 1; // не забываем вернуть флаг в положение "в здании"
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
-	int time = (rand() % 25 + 36) * 1000; // генерируем время работы окна
+	int index = WaitForMultipleObjects(WINDOWS_NUMBER, WindowMutexes, 0, INFINITE) - WAIT_OBJECT_0; 
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	Params[id]->in_building = 1; 
+	ReleaseMutex(WriteMutex); 
+	int time = (rand() % 25 + 36) * 1000; 
 
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	change_window_info(index, ticket_id, time / 1000, Params[id]->id); // изменяем информацию в окне
-	write(" ", Params[id]->x, Params[id]->y); // телепортация к окну в следующих 3 строчках
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	change_window_info(index, ticket_id, time / 1000, Params[id]->id); 
+	write(" ", Params[id]->x, Params[id]->y); 
 	Params[id]->x = WINDOW_WIDTH/2 + WINDOW_WIDTH*index;
 	Params[id]->y = 4 + WINDOW_HEIGHT;
-	refresh_model(); // обновляем модель
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
+	refresh_model(); 
+	ReleaseMutex(WriteMutex); 
 
-	Sleep(time); // условно работаем с окном
-	ReleaseMutex(WindowMutexes[index]); // освобождаем окно для другого посетителя
+	Sleep(time); 
+	ReleaseMutex(WindowMutexes[index]); 
 
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	write(" ", Params[id]->x, Params[id]->y); // телепортация обратно на свое место в следующих 3 строчках
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	write(" ", Params[id]->x, Params[id]->y); 
 	Params[id]->x = MAIN_WINDOW_WIDTH/4 + id*2;
 	Params[id]->y = MAIN_WINDOW_HEIGHT - 3;
-	refresh_model(); // обновляем модель
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
-	Sleep(1000); // ждем секунду,чтобы было видно,как посетитель уходит с почты
+	refresh_model(); 
+	ReleaseMutex(WriteMutex); 
+	Sleep(1000); 
 
-	WaitForSingleObject(WriteMutex, INFINITE); // ждем разрешение на изменение модели
-	Params[id]->in_building = 0; // выход с почты
-	write(" ", Params[id]->x, Params[id]->y); // убираем с модели наше представление 
-	ReleaseMutex(WriteMutex); // освобождаем для других потоков
+	WaitForSingleObject(WriteMutex, INFINITE); 
+	Params[id]->in_building = 0; 
+	write(" ", Params[id]->x, Params[id]->y); 
+	ReleaseMutex(WriteMutex); 
 
-	ExitThread(0); // конец потока
+	ExitThread(0); 
 }
 
 void cls_scr()
